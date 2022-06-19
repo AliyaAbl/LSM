@@ -16,34 +16,24 @@ def rho_derivative(u):
 # To run on GPU
 @jit
 def forwardpass(x,wh,wo):
-    #print(np.shape(x), np.shape(wh), np.shape(wo))
-    zh = wh @ x
-    rho_v = np.vectorize(rho) 
-    xh = rho_v(np.array(zh))
-    zo = wo.T @ xh
-    zo = zo[0][0]
-    xo = rho(zo)
+    zh = np.dot(wh, x)
+    xh = rho(zh)
+    zo = np.dot(wo.T, xh)
+    xo = rho(zo)[0]
     return zh, xh, zo, xo
 
 # To run on GPU
 @jit
-def backwardpass(x,y,zh,xh,zo,xo, wo):
-    dE_dx0  = - (y - xo)
-    dE_dx0  = np.reshape(dE_dx0,  (1,1))
-    dx0_dz0 = rho_derivative(zo) 
-    dx0_dz0 = np.reshape(dx0_dz0, (1,1))
-    dz0_dwo = xh.T
-    #print(np.shape(dE_dx0), np.shape(dx0_dz0), np.shape(dz0_dwo))
-    dE_dwo  = dE_dx0 @ dx0_dz0 @ dz0_dwo
-    #print(np.shape(dE_dwo))
+def backwardpass(x,y,zh,xh,zo,xo, wo, wh):
+    dE_dx0  = xo - y 
+    dx0_dz0 = rho_derivative(zo)[0]
+    dz0_dwo = np.reshape(xh, (np.shape(xh)[0], 1))
+    dE_dwo  = dE_dx0 * dx0_dz0 * dz0_dwo
 
     dz0_dxh = wo.T
-    rho_derivative_v = np.vectorize(rho_derivative)
-    dxh_dzh = rho_derivative_v(zh)
-    dzh_dwh = x.T
-    #print('---',np.shape(dE_dx0), np.shape(dx0_dz0), np.shape(dz0_dxh), np.shape(dxh_dzh), np.shape(dzh_dwh))
-    dE_dwh  = dE_dx0 @ dx0_dz0 @ dz0_dxh @ dxh_dzh @ dzh_dwh
-    #print(np.shape(dE_dwh))
+    dxh_dzh = np.reshape(rho_derivative(zh), (np.shape(xh)[0], 1))
+    dzh_dwh = np.reshape(x, (1,2))
+    dE_dwh  = dz0_dxh @ dxh_dzh @ dzh_dwh
     return dE_dwo, dE_dwh
 
 # To run on GPU
@@ -73,19 +63,18 @@ def train(x, y):
         for i in range(0, n):
             x_  = x[i,:].T
             y_  = y[i]
-            x_  = np.reshape(x_, (d, 1))
+            #x_  = np.reshape(x_, (d, 1))
             zh, xh, zo, xo = forwardpass(x_, wh, wo)
-            dE_dwo, dE_dwh = backwardpass(x_,y_,zh,xh,zo,xo, wo)
+            dE_dwo, dE_dwh = backwardpass(x_,y_,zh,xh,zo,xo, wo, wh)
             wh, wo         = SGD(wh,wo,dE_dwo,dE_dwh,rate)
             ypred[i, iterations] = xo
 
         if iterations % 1000 == 0:
-            length = np.shape(y)[0]
-            err = (1/length) * (y - ypred[:,iterations])**2
+            err = (1/n) * (y - ypred[:,iterations])**2
             err = np.mean(err)
             error = np.append(error, err)
             print('Error in iteration {} is {}'.format(iterations, err))
-            #print(ypred[1:5, iterations], ypred[1:5, iterations-10] )
+            
     return wo, wh, error
 
 wo, wh, error= train(XX, YY)
