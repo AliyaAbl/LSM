@@ -87,7 +87,7 @@ def train(x, y):
             #print(ypred[1:5, iterations], ypred[1:5, iterations-10] )
     return wo, wh, error
 
-wo, wh = train(XX, YY)
+wo, wh, error= train(XX, YY)
 print(wo, wh)
 print('\n')
 print(error)
