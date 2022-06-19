@@ -75,6 +75,10 @@ def train(x, y):
             error = np.append(error, err)
             print('Error in iteration {} is {}'.format(iterations, err))
             
+        if iterations % 10000 == 0:
+            print('wo = ', wo)
+            print('wh = ', wh)
+            
     return wo, wh, error
 
 wo, wh, error= train(XX, YY)
