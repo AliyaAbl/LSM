@@ -33,15 +33,14 @@ def backwardpass(x,y,zh,xh,zo,xo, wo, wh):
     dz0_dxh = wo.T
     dxh_dzh = np.reshape(rho_derivative(zh), (np.shape(xh)[0], 1))
     dzh_dwh = np.reshape(x, (1,2))
-    dE_dwh  = dz0_dxh @ dxh_dzh @ dzh_dwh
+    dE_dwh  = (dE_dx0 * dx0_dz0 )* dz0_dxh @ dxh_dzh @ dzh_dwh
     return dE_dwo, dE_dwh
 
 # To run on GPU
 @jit
 def SGD(wh,wo,dE_dwo,dE_dwh,rate):
-    #print('---------', np.shape(wh), np.shape(dE_dwh), np.shape(wo), np.shape(dE_dwo))
-    wh = wh - rate * dE_dwh
-    wo = wo - rate * dE_dwo.T
+     wh = wh - rate * dE_dwh
+    wo = wo - rate * dE_dwo
     return wh,wo
 
 m = 15
