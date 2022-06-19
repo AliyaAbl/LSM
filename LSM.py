@@ -79,8 +79,9 @@ def train(x, y):
             wh, wo         = SGD(wh,wo,dE_dwo,dE_dwh,rate)
             ypred[i, iterations] = xo
 
-        if iterations % 100 == 0:
-            err = (1/n) * (y - ypred[:,iterations])**2
+        if iterations % 1000 == 0:
+            length = np.shape(y)[0]
+            err = (1/length) * (y - ypred[:,iterations])**2
             err = np.mean(err)
             error = np.append(error, err)
             print('Error in iteration {} is {}'.format(iterations, err))
