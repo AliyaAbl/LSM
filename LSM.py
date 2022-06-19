@@ -63,25 +63,30 @@ def train(x, y):
         for i in range(0, n):
             x_  = x[i,:].T
             y_  = y[i]
-            #x_  = np.reshape(x_, (d, 1))
             zh, xh, zo, xo = forwardpass(x_, wh, wo)
             dE_dwo, dE_dwh = backwardpass(x_,y_,zh,xh,zo,xo, wo, wh)
             wh, wo         = SGD(wh,wo,dE_dwo,dE_dwh,rate)
             ypred[i, iterations] = xo
 
         if iterations % 1000 == 0:
-            err = (1/n) * (y - ypred[:,iterations])**2
+            #print(np.shape(wo), np.shape(wh))
+            err = (1/2) * (y - ypred[:,iterations])**2 
             err = np.mean(err)
             error = np.append(error, err)
             print('Error in iteration {} is {}'.format(iterations, err))
             
         if iterations % 10000 == 0:
-            print('wo = ', wo)
-            print('wh = ', wh)
-            
+            print(wo)
+            print(wh)
+
     return wo, wh, error
 
-wo, wh, error= train(XX, YY)
+wo, wh, error = train(XX, YY)
+
+np.save('/home/apdl006/LSM/wo.npy', wo)
+np.save('/home/apdl006/LSM/wh.npy', wh)
+np.save('/home/apdl006/LSM/error.npy', error)
+
 print(wo, wh)
 print('\n')
 print(error)
