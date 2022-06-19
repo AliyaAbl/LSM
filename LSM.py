@@ -85,7 +85,9 @@ def train(x, y):
             error = np.append(error, err)
             print('Error in iteration {} is {}'.format(iterations, err))
             #print(ypred[1:5, iterations], ypred[1:5, iterations-10] )
-    return wo, wh
+    return wo, wh, error
 
 wo, wh = train(XX, YY)
 print(wo, wh)
+print('\n')
+print(error)
