@@ -9,7 +9,7 @@ YY = labels.reshape(n)
 
 import math
 def rho(u): 
-    return 1/(1 + math.exp(-u))
+    return 1/(1 + np.exp(-u))
 def rho_derivative(u): 
     return rho(u)*(1-rho(u))
 
