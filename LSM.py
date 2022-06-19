@@ -88,3 +88,4 @@ def train(x, y):
     return wo, wh
 
 wo, wh = train(XX, YY)
+print(wo, wh)
